@@ -251,6 +251,15 @@ RSA *stringToRSAPublicKey(const std::string &publicKeyString)
 //     decryptRSA(ciphertext, privateKey, plaintext);
 //     std::cout << "Original Text: " << plaintext << std::endl;
 
+//     // Store Private Key into rsa_private_key.pem file
+//     std::ofstream privateKeyData("../../keys/rsa_private_key.pem");
+//     privateKeyData << rsaPublicKeyToString(privateKey);
+
+//     // Read That Key
+//     std::ifstream ifstream("../../keys/rsa_private_key.pem");
+//     std::string someKey;
+//     ifstream >> someKey;
+
 //     // Cleanup
 //     RSA_free(publicKey);
 //     RSA_free(privateKey);

@@ -2,6 +2,7 @@
 #define CLIENT_HANDLER_HPP
 
 #include "../utils/io_operations.h"
+#include "../utils/write_to_json_file.h"
 
 int HandleClient(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket)
 {
@@ -17,14 +18,46 @@ int HandleClient(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket)
         int status = SUCCESS;
         while (status == SUCCESS)
         {
-            std::string response;
-            status = getData(client_socket, response);
+            // Receive a String Object
+            std::string responseStr;
+            status = getData(client_socket, responseStr);
 
-            BOOST_LOG_TRIVIAL(debug) << response << std::endl;
-            if (response == "exit")
+            // Try to Parse it into JSON Object
+            try
             {
-                closeConnection(client_socket);
-                break;
+                json responseJSON = json::parse(responseStr);
+                if (responseJSON.find("key") != responseJSON.end())
+                {
+                    BOOST_LOG_TRIVIAL(debug) << "Receive a PUBLIC KEY from " << client_socket->remote_endpoint().address();
+                    BOOST_LOG_TRIVIAL(debug) << "Key: ";
+                    BOOST_LOG_TRIVIAL(debug) << responseJSON.at("key") << std::endl;
+
+                    // Change the content of the key
+                    responseJSON[client_socket->remote_endpoint().address().to_string()] = responseJSON["key"];
+                    responseJSON.erase("key");
+
+                    // Store the client public key into the file
+                    std::string clients_keys_json_file = "keys/clients_public_key.json";
+                    append_to_JSON_file(clients_keys_json_file, &responseJSON);
+                }
+            }
+            // If it is not a JSON object
+            catch (const std::exception &e)
+            {
+                BOOST_LOG_TRIVIAL(debug) << responseStr << std::endl;
+
+                if (responseStr == "CLOSE BY SERVER")
+                {
+                    closeConnection(client_socket);
+                    return SERVER_CONNECTION_CLOSE;
+                } 
+                else if (responseStr == "exit")
+                {
+                    sendData(client_socket, "exit");
+                    closeConnection(client_socket);
+                    return CLIENT_CONNECTION_CLOSE;
+                }
+                
             }
         }
 
@@ -45,7 +78,7 @@ int HandleClient(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket)
     }
 }
 
-// To Gracefully Shutdown the Server 
+// To Gracefully Shutdown the Server
 void handleShutdownSignal(int signal)
 {
     BOOST_LOG_TRIVIAL(info) << "Received signal " << signal << ". Initiating graceful shutdown." << std::endl;
@@ -56,12 +89,9 @@ void handleShutdownSignal(int signal)
     for (std::shared_ptr<boost::asio::ip::tcp::socket> client_socket : clientsConnections)
     {
         // Send a shutdown message and close the client socket
-        sendData(client_socket, "exit");
+        sendData(client_socket, "CLOSE BY SERVER");
     }
 
-    // Exit the Program
-    exit(1);
 }
-
 
 #endif

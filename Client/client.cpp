@@ -2,7 +2,9 @@
 #include "src/utils/shared_resource.h"
 #include "src/utils/io_operations.h"
 #include "src/utils/encode_decode.h"
+#include "src/utils/write_to_PEM_file.h"
 #include <iostream>
+#include <fstream>
 #include <thread>
 
 int main()
@@ -29,8 +31,33 @@ int main()
         std::getline(std::cin, user_email);
         sendData(client_socket, user_email);
 
+        // Generate RSA public key and RSA private key
+        RSA *publicKey, *privateKey;
+        privateKey = generateRSAKeyPair();
+        publicKey = RSAPrivateKey_dup(privateKey);
+
+        // Store Private Key into rsa_private_key.pem file
+        writeRSAPrivateKeyToPEMFile(publicKey, "keys/rsa_private_key.pem");
+
+        // Send the public Key to the Server
+        json public_key_json_object;
+
+        public_key_json_object.emplace("key", rsaPublicKeyToString(publicKey));
+        sendData(client_socket, &public_key_json_object);
+
+        // WAIT TILL THE SERVER GRANT PERMISSION TO CONNECT
+        std::cout << "WAIT FOR THE SERVER GRANT PERMISSION TO CONNECT..." << std::endl;
+        std::string status;
+        getData(client_socket, status);
+
+        if (status == "exit")
+        {
+            isRunning = false;
+        }
+
         // Start a thread to receive data from the server
-        std::thread receive_thread([&client_socket](){
+        std::thread receive_thread([&client_socket]()
+                                   {
             std::string response;
             while (isRunning)
             {
@@ -39,19 +66,21 @@ int main()
                 {
                     break;
                 }
-                if (status == CLOSE_FROM_SERVER)
-                {
-                    // FOR GRACEFUL SHUTDOWN PURPOSE
-                    // SEND BACK TO THE SERVER
-                    sendData(client_socket, "exit");
-                }
-                
 
-                std::cout << "From Server: " << response << std::endl;
+                std::cout << std::endl 
+                        << "From Server: " << response 
+                        << std::endl;
 
-                if (response == "exit")
+                if (response == "CLOSE BY SERVER")
                 {
                     isRunning = false;
+                    sendData(client_socket, "CLOSE BY SERVER");
+                    return;
+                }
+                else if (response == "exit")
+                {
+                    isRunning = false;
+                    return;
                 }
                 
             } });
@@ -64,27 +93,24 @@ int main()
 
             if (message == "exit")
             {
-                isRunning = false;
-                break;
+                sendData(client_socket, "exit");
+                // Close the client_socket when done
+                receive_thread.join();
+
+                continue;
             }
 
-            if (!isRunning)
-            {
-                break;
-            }
             // Try to Encrypt with AES-128
             // In Production use RSA Algo - 2048 bit
             std::string encrypted_message;
-            encryptAES(message, reinterpret_cast<const unsigned char*>("Hello World"), encrypted_message);
+            encryptRSA(reinterpret_cast<const unsigned char *>(message.c_str()), publicKey, encrypted_message);
 
             sendData(client_socket, encrypted_message);
         }
 
-        // Close the client_socket when done
-        if (!isRunning)
-        {
-            receive_thread.join();
-        }
+        // Free memory of the public and Private Key
+        RSA_free(publicKey);
+        RSA_free(privateKey);
     }
     catch (const std::exception &e)
     {

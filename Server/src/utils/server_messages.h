@@ -34,4 +34,8 @@
 #define DECRYPT_FAIL            0x00000000
 #define DECRYPT_SUCCESS         0x00000001
 
+//? FOR APPEND JSON FILE
+#define APPEND_JSON_FAIL        0x00000000
+#define APPEND_JSON_SUCCESS     0x00000001
+
 #endif

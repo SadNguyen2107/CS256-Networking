@@ -65,7 +65,7 @@ int getData(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket, std::st
 
 // Get Data From the client_socket
 // Get back Json Object
-int getData(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket, std::shared_ptr<json> json_result)
+int getData(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket, json* json_result)
 {
     try
     {
@@ -104,7 +104,7 @@ int getData(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket, std::sh
         std::string serializedData(std::istreambuf_iterator<char>(response_stream), {});
 
         // Deserialize the JSON data back to an object
-        json_result = std::make_shared<json>(json::parse(serializedData));
+        *json_result = json::parse(serializedData);
 
         return RECEIVE_SUCCESS;
     }
@@ -174,7 +174,7 @@ int sendData(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket, const 
 
 // Send the Data To the Client
 // Send a JSON Object
-int sendData(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket, const std::shared_ptr<json> json_obj)
+int sendData(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket, const json* json_obj)
 {
     try
     {
@@ -227,7 +227,6 @@ int sendData(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket, const 
 int closeConnection(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket)
 {
     BOOST_LOG_TRIVIAL(info) << "Close the connection of " << client_socket->remote_endpoint().address().to_string() << std::endl;
-    sendData(client_socket, "exit");
 
     // Erase in the std::set of all the client_socket store
     clientsConnections.erase(client_socket);
