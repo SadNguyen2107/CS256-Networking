@@ -20,7 +20,7 @@ int verifyClientConnection(std::shared_ptr<boost::asio::ip::tcp::socket> client_
         client_socket->close();
     }
 
-    std::cout << "Email: " << response << " want to connect!" << std::endl;
+    std::cout << "HUST-ID: " << response << " want to connect!" << std::endl;
     std::cout << "Permit: y or n? ";
     std::string server_response;
     std::getline(std::cin, server_response);

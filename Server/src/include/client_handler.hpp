@@ -28,9 +28,10 @@ int HandleClient(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket)
                 json responseJSON = json::parse(responseStr);
                 if (responseJSON.find("key") != responseJSON.end())
                 {
-                    BOOST_LOG_TRIVIAL(debug) << "Receive a PUBLIC KEY from " << client_socket->remote_endpoint().address();
-                    BOOST_LOG_TRIVIAL(debug) << "Key: ";
-                    BOOST_LOG_TRIVIAL(debug) << responseJSON.at("key") << std::endl;
+                    // For Checking Receiving Key
+                    // BOOST_LOG_TRIVIAL(debug) << "Receive a PUBLIC KEY from " << client_socket->remote_endpoint().address();
+                    // BOOST_LOG_TRIVIAL(debug) << "Key: ";
+                    // BOOST_LOG_TRIVIAL(debug) << responseJSON.at("key") << std::endl;
 
                     // Change the content of the key
                     responseJSON[client_socket->remote_endpoint().address().to_string()] = responseJSON["key"];

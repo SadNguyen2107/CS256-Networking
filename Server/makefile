@@ -1,28 +1,65 @@
-# Determine the operating system
+# Output File
+OUTPUT 			= Homework_Submitter
+
+# Compiler and Flags
+GCC 			= x86_64-w64-mingw32-g++
+GGC_FLAGS 		= -static-libgcc -static-libstdc++ -Wall
+LOGFLAGS 		= -DBOOST_LOG_DYN_LINK
+LIBS 			= -lsqlite3
+
+# Check the OS-SYSTEM to give the Right LIBS
+#--------------------------------------------------------------------
 ifeq ($(OS),Windows_NT)
-    # Windows-specific compiler and flags
-    CC = x86_64-w64-mingw32-g++
-    CFLAGS = -static-libgcc -static-libstdc++
-    LOGFLAGS = -DBOOST_LOG_DYN_LINK
-    LDFLAGS = -lsqlite3 -lole32 -lshell32 -lcomdlg32 -luuid -lws2_32 -lboost_system-mt -lboost_log-mt -lcrypto
+    # Windows-specific settings or actions
+	LIBS += -lws2_32 -lboost_system-mt -lboost_log-mt -lcrypto
+else ifeq ($(OS), Linux)
+	# Linux-specific settings or actions
+	LIBS += -lsqlite3 -lboost_log
+else ifeq ($(OS),Darwin)
+    # macOS-specific settings or actions
 else
-    # Linux-specific compiler and flags
-    CC = g++
-    CFLAGS =
-    LDFLAGS = -lsqlite3 -lboost_system -lboost_log -lcrypto# Add Linux-specific linker flags here
+    $(error Unsupported operating system: $(OS))
 endif
+#------------------------------------------------------------------
 
-# Common compiler flags and source files
-CFLAGS += -Wall
-SOURCES = server.cpp
+# Directories
+OBJ_DIR 		= build/obj
+BIN_DIR 		= build/bin
 
-# Output executable name
-OUTPUT = server
+# Source Files
+SOURCES 		= server.cpp
+OBJECTS 		= $(patsubst $(SRC_DIR)/%.cpp, $(OBJ_DIR)/%.o, $(SOURCES))
+EXECUTABLE 		= $(BIN_DIR)/$(OUTPUT)
 
-all: $(OUTPUT)
+# Build Target
+all: directories $(EXECUTABLE)
 
-$(OUTPUT): $(SOURCES)
-	$(CC) $(CFLAGS) $(LOGFLAGS) -o $(OUTPUT) $(SOURCES) $(LDFLAGS)
+directories:
+	@mkdir -p $(OBJ_DIR)
+	@mkdir -p $(BIN_DIR)
 
+
+$(EXECUTABLE): $(OBJECTS)
+	$(GCC) $(GGC_FLAGS) $(LOGFLAGS) -o $@ $^ $(RES_FILES) $(LIBS)
+	@./$(EXECUTABLE)
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
+	$(GCC) $(GGC_FLAGS) $(LOGFLAGS) -c -o $@ $<
+
+
+# For Cleaning Up the Folder
 clean:
-	rm -f $(OUTPUT)
+	@echo clean...
+	@rm -rf $(OBJ_DIR) $(BIN_DIR)
+
+
+# For Running Allplication
+run:
+	@./$(EXECUTABLE)
+
+
+# Check Memory Leak
+check:
+	@drmemory -logdir logs $(EXECUTABLE).exe
+
+.PHONY: all clean directories

@@ -208,6 +208,33 @@ RSA *stringToRSAPublicKey(const std::string &publicKeyString)
     return publicKey;
 }
 
+// Convert RSA private key to PEM format string
+std::string rsaPrivateKeyToString(RSA *privateKey)
+{
+    BIO *bio = BIO_new(BIO_s_mem());
+    PEM_write_bio_RSAPrivateKey(bio, privateKey, nullptr, nullptr, 0, nullptr, nullptr);
+
+    char *buffer;
+    size_t size = BIO_get_mem_data(bio, &buffer);
+    std::string result(buffer, size);
+
+    BIO_free(bio);
+
+    return result;
+}
+
+// Convert PEM format string to RSA private key
+RSA *stringToRSAPrivateKey(const std::string &privateKeyString)
+{
+    BIO *bio = BIO_new_mem_buf(privateKeyString.c_str(), -1);
+    RSA *privateKey = PEM_read_bio_RSAPrivateKey(bio, nullptr, nullptr, nullptr);
+
+    BIO_free(bio);
+
+    return privateKey;
+}
+
+
 // Usage
 //---------------------------------------------------------------------------------------------------
 // int main()

@@ -5,7 +5,6 @@
 #include "client_handler.hpp"
 #include "user_authentication.hpp"
 
-
 int greeting(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket)
 {
     std::string message = "Hello From Server...";
@@ -14,7 +13,7 @@ int greeting(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket)
     return status;
 }
 
-void acceptConnections(boost::asio::ip::tcp::acceptor& acceptor_server, boost::asio::io_context& io_context)
+void acceptConnections(boost::asio::ip::tcp::acceptor &acceptor_server, boost::asio::io_context &io_context)
 {
     // Connect the CLIENTS
     while (isRunning)
@@ -39,7 +38,7 @@ void acceptConnections(boost::asio::ip::tcp::acceptor& acceptor_server, boost::a
         greeting(client_socket);
 
         int isAccept = verifyClientConnection(client_socket);
-        if (isAccept == CONNECTION_DENY || !isRunning)
+        if (isAccept == CONNECTION_DENY || isAccept == CLIENT_CONNECTION_CLOSE || !isRunning)
         {
             // SERVER DENY TO CONNECT
             closeConnection(client_socket);
