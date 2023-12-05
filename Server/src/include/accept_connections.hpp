@@ -13,18 +13,11 @@ int greeting(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket)
     return status;
 }
 
-void acceptConnections(boost::asio::ip::tcp::acceptor &acceptor_server, boost::asio::io_context &io_context)
+void handle_accept(const boost::system::error_code &error, std::shared_ptr<boost::asio::ip::tcp::socket> client_socket)
 {
-    // Connect the CLIENTS
-    while (isRunning)
+    if (!error)
     {
-        // Creating a socket to represent a connected client
-        // Use Shared_ptr to share the owner ship instead of copying them
-        std::shared_ptr<boost::asio::ip::tcp::socket> client_socket = std::make_shared<boost::asio::ip::tcp::socket>(io_context);
-
-        // Waiting for connection from Client
-        acceptor_server.accept(*client_socket);
-
+        // Connection accepted. Handle the connection using client_socket.
         // Get CLIENT'S IP Address and port
         boost::asio::ip::tcp::endpoint client_endpoint = client_socket->remote_endpoint();
         BOOST_LOG_TRIVIAL(debug) << "Connected To Client: "
@@ -42,7 +35,7 @@ void acceptConnections(boost::asio::ip::tcp::acceptor &acceptor_server, boost::a
         {
             // SERVER DENY TO CONNECT
             closeConnection(client_socket);
-            continue;
+            return;
         }
 
         // SERVER GRANT PERMISSION TO CONNECT
@@ -54,7 +47,28 @@ void acceptConnections(boost::asio::ip::tcp::acceptor &acceptor_server, boost::a
 
         clientsConnections.insert(client_socket);
     }
-    BOOST_LOG_TRIVIAL(info) << "Stopped accepting new connections." << std::endl;
+    else
+    {
+        // An error occurred.
+        BOOST_LOG_TRIVIAL(error) << "Error accepting connection: " << error.message() << std::endl;
+    }
+}
+
+void acceptConnections()
+{
+    // Connect the CLIENTS
+    while (isRunning)
+    {
+        // Creating a socket to represent a connected client
+        // Use Shared_ptr to share the owner ship instead of copying them
+        std::shared_ptr<boost::asio::ip::tcp::socket> client_socket = std::make_shared<boost::asio::ip::tcp::socket>(*io_context);
+
+        // Start an asynchronous accept operation
+        acceptor_server->async_accept(*client_socket, std::bind(&handle_accept, std::placeholders::_1, client_socket));
+
+        // Run the io_context to process asynchronous operations
+        io_context->run();
+    }
 }
 
 #endif

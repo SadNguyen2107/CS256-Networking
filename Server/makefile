@@ -11,7 +11,7 @@ LIBS 			= -lsqlite3
 #--------------------------------------------------------------------
 ifeq ($(OS),Windows_NT)
     # Windows-specific settings or actions
-	LIBS += -lws2_32 -lboost_system-mt -lboost_log-mt -lcrypto
+	LIBS += -lwsock32 -lws2_32 -lboost_system-mt -lboost_log-mt -lcrypto
 else ifeq ($(OS), Linux)
 	# Linux-specific settings or actions
 	LIBS += -lsqlite3 -lboost_log
