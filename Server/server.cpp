@@ -1,13 +1,12 @@
 #include "./src/include/client_handler.hpp"
 #include "./src/include/user_authentication.hpp"
 #include "./src/include/accept_connections.hpp"
-#include <csignal>
 
 
 int main(int argc, char const *argv[])
 {
     // Create io_service for SERVER
-    boost::asio::io_context io_context;
+    io_context = std::make_shared<boost::asio::io_context>();
 
     // IP Address of the server
     std::string IPv4ServerStr = "127.0.0.1";
@@ -18,8 +17,8 @@ int main(int argc, char const *argv[])
     boost::asio::ip::tcp::endpoint server_endpoint(serverIPv4Adddress, port);
 
     // Listening for any new incomming connection
-    boost::asio::ip::tcp::acceptor acceptor_server(
-        io_context,
+    acceptor_server = std::make_shared<boost::asio::ip::tcp::acceptor>(
+        *io_context,
         server_endpoint
     );
 
@@ -33,7 +32,7 @@ int main(int argc, char const *argv[])
     // Activate By Pressed Ctrl + C
     std::signal(SIGINT, &handleShutdownSignal);
 
-    std::thread acceptThread(&acceptConnections, std::ref(acceptor_server), std::ref(io_context));
+    std::thread acceptThread(&acceptConnections);
 
     acceptThread.join();
     BOOST_LOG_TRIVIAL(info) << "Server shutting downs." << std::endl;

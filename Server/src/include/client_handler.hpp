@@ -85,14 +85,21 @@ void handleShutdownSignal(int signal)
     BOOST_LOG_TRIVIAL(info) << "Received signal " << signal << ". Initiating graceful shutdown." << std::endl;
     isRunning = false; // Set the flag to stop accepting new connections
 
-    BOOST_LOG_TRIVIAL(info) << "Server is shutting down. Goodbye!" << std::endl;
     // Gracefully shutdown all the connections
     for (std::shared_ptr<boost::asio::ip::tcp::socket> client_socket : clientsConnections)
     {
+        BOOST_LOG_TRIVIAL(info) << "Shutting Connection with " << client_socket->remote_endpoint().address() << std::endl;
         // Send a shutdown message and close the client socket
         sendData(client_socket, "CLOSE BY SERVER");
+        client_socket->close();
     }
+    // Stop accepting new connections
+    BOOST_LOG_TRIVIAL(info) << "Stopped accepting new connections." << std::endl;
+    acceptor_server->close();
 
+    // Stop the io_context to exit the run loop
+    BOOST_LOG_TRIVIAL(info) << "Server is shutting down. Goodbye!" << std::endl;
+    io_context->stop();
 }
 
 #endif
