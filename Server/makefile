@@ -12,13 +12,19 @@ LIBS 			= -lsqlite3
 ifeq ($(OS),Windows_NT)
     # Windows-specific settings or actions
 	LIBS += -lwsock32 -lws2_32 -lboost_system-mt -lboost_log-mt -lcrypto
-else ifeq ($(OS), Linux)
-	# Linux-specific settings or actions
-	LIBS += -lsqlite3 -lboost_log
-else ifeq ($(OS),Darwin)
-    # macOS-specific settings or actions
 else
-    $(error Unsupported operating system: $(OS))
+	UNAME_S := $(shell uname -s)
+    ifeq ($(UNAME_S),Linux)
+	GCC = g++
+	LIBS += -lboost_log -lboost_system -lsqlite3 -lboost_log
+    endif
+# else ifeq ($(OS), Linux)
+# 	# Linux-specific settings or actions
+# 	LIBS += -lsqlite3 -lboost_log
+# else ifeq ($(OS),Darwin)
+#     # macOS-specific settings or actions
+# else
+#     $(error Unsupported operating system: $(OS))
 endif
 #------------------------------------------------------------------
 

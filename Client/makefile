@@ -12,13 +12,19 @@ LIBS 			= -lmingw32 -lSDL2main -lSDL2 -lSDL2_Image -lSDL2_Mixer -lSDL2_ttf
 ifeq ($(OS),Windows_NT)
     # Windows-specific settings or actions
 	LIBS += -lole32 -lshell32 -lcomdlg32 -luuid -lws2_32 -lboost_system-mt -lboost_log-mt -lcrypto
-else ifeq ($(OS), Linux)
-	# Linux-specific settings or actions
-	LIBS += -lboost_log
-else ifeq ($(OS),Darwin)
-    # macOS-specific settings or actions
 else
-    $(error Unsupported operating system: $(OS))
+	UNAME_S := $(shell uname -s)
+    ifeq ($(UNAME_S),Linux)
+	GCC = g++
+	LIBS += -lboost_log -lboost_system
+    endif
+# else ifeq ($(OS), Linux)
+# 	# Linux-specific settings or actions
+# 	LIBS += -lboost_log
+# else ifeq ($(OS),Darwin)
+#     # macOS-specific settings or actions
+# else
+#     $(error Unsupported operating system: $(OS))
 endif
 #------------------------------------------------------------------
 
