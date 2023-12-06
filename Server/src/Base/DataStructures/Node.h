@@ -5,10 +5,10 @@ template <typename Value>
 struct Node
 {
     Value data;
-    Node* next;
+    Node *next;
 
-    Node(Value data): data(data), next(nullptr) {}
+    Node(Value data) : data(data), next(nullptr) {}
+    ~Node() {}
 };
-
 
 #endif

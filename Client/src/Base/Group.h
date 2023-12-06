@@ -8,7 +8,13 @@
 struct Student
 {
     std::string student_name;
-    unsigned int student_id;
+    size_t student_id;
+
+    ~Student()
+    {
+        this->student_name = "";
+        this->student_id = 0;
+    }
 
     //* FOR DEBUG PURPOSE
     friend std::ostream &operator<<(std::ostream &os, const Student &student)
@@ -28,7 +34,7 @@ struct Student
         return os;
     }
 };
-Student *newStudent(std::string name, unsigned int id)
+Student *newStudent(std::string name, size_t id)
 {
     Student *s = new Student();
     s->student_name = name;
@@ -123,12 +129,17 @@ Group::Group(std::string group_name)
 
 Group::~Group()
 {
-    Node<Student*> * head = this->group_students.getHead();
+    Node<Student *> *head = this->group_students.getHead();
     while (head != nullptr)
     {
-        Node<Student*> * temp = head;
+        Node<Student *> *temp = head;
         head = head->next;
-        delete temp;
+
+        delete temp->data;
+        temp->data = nullptr;
+
+        delete temp; // Deallocate the Node object
+        temp = nullptr;
     }
 };
 
