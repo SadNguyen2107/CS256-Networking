@@ -8,7 +8,9 @@
 #include <openssl/evp.h>
 #include <openssl/aes.h>
 #include <openssl/rand.h>
-
+#include <fstream>
+#include <vector>
+#include <string>
 // Generate RSA key pair
 RSA *generateRSAKeyPair()
 {
