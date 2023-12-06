@@ -76,7 +76,7 @@ void LinkedList<Value>::add(Value value_to_add)
         Node<Value> *newNode = new Node<Value>(value_to_add);
 
         Node<Value> *current_head = this->head;
-        while (current_head != nullptr)
+        while (current_head->next != nullptr)
         {
             current_head = current_head->next;
         }
