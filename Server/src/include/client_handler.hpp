@@ -4,7 +4,8 @@
 #include "../utils/io_operations.h"
 #include "../utils/write_to_json_file.h"
 
-// void HandleFile();
+void HandleID(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json* responseJSON);
+void HandleFile(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json* responseJSON);
 void HandleKey(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json* responseJSON);
 
 int HandleClient(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket)
@@ -32,6 +33,7 @@ int HandleClient(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket)
 
                 // Handle Client Key Send
                 HandleKey(client_socket, &responseJSON);
+                HandleFile(client_socket,&responseJSON);
             }
             // If it is not a JSON object
             catch (const std::exception &e)
@@ -103,13 +105,35 @@ void HandleKey(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json*
         // BOOST_LOG_TRIVIAL(debug) << responseJSON.at("key") << std::endl;
 
         // Change the content of the key
-        responseJSON->at(client_socket->remote_endpoint().address().to_string()) = responseJSON->at( "key");
+        responseJSON->at(client_socket->remote_endpoint().address().to_string()) = responseJSON->at("key");
         responseJSON->erase("key");
 
         // Store the client public key into the file
         std::string clients_keys_json_file = "keys/clients_public_key.json";
         append_to_JSON_file(clients_keys_json_file, responseJSON);
+        
+        //send the neccessary info to the client.....
+        //HandleID
+        HandleID(client_socket,responseJSON);
+
+
     }
 }
-
+void HandleFile(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json* responseJSON){
+    if (responseJSON->find("file") != responseJSON->end()){
+        auto list_of_file = responseJSON->at("file");
+        for (auto it = list_of_file.begin(); it!=list_of_file.end();it++){
+            std::cout<<"list of file from:"<<client_socket->remote_endpoint().address().to_string()<<std::endl;
+            std::cout<<*it<<std::endl;
+        }
+    }
+    /*
+    where to save the file: /data/name_of_project/group_id/file_name
+    backup file to decode: /backup/name_of_project/group_id/file_name
+    */
+}
+void HandleID(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json* responseJSON){
+    //querying all the data
+    //send to client
+}
 #endif
