@@ -1,18 +1,18 @@
 #ifndef UPDATEFUNC_H
 #define UPDATEFUNC_H
 
-#define UPDATE_FAIL 0
-#define UPDATE_SUCCESS 1
+#include "database_messages.h"
 
-#include "../Base/Group.h"
-#include "../Base/Project.h"
-#include <sqlite3.h>
+enum UpdateStatus {
+    UPDATE_FAIL = 0,
+    UPDATE_SUCCESS = 1
+};
 
 // INSERT INTO students table in projects.db
-int insertStudentInfo(sqlite3 *DB, Student *student, int group_id)
+UpdateStatus insertStudentInfo(sqlite3 *DB, Student *student, int group_id)
 {
     // SET FLAG
-    int success = UPDATE_SUCCESS;
+    UpdateStatus success = UPDATE_SUCCESS;
 
     // The prepared statment object
     sqlite3_stmt *stmt = nullptr;
@@ -23,7 +23,7 @@ int insertStudentInfo(sqlite3 *DB, Student *student, int group_id)
     int rc = sqlite3_prepare_v2(DB, sql_statement, -1, &stmt, 0);
     if (rc != SQLITE_OK)
     {
-        std::cerr << "SQL error: " << sqlite3_errmsg(DB) << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "SQL error: " << sqlite3_errmsg(DB) << std::endl;
     }
 
     int student_id = student->student_id;
@@ -37,7 +37,7 @@ int insertStudentInfo(sqlite3 *DB, Student *student, int group_id)
     if (rc != SQLITE_DONE)
     {
         // ERROR OCCUR
-        std::cerr << "Error: " << sqlite3_errmsg(DB) << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "Error: " << sqlite3_errmsg(DB) << std::endl;
         success = UPDATE_FAIL;
     }
 

@@ -3,9 +3,7 @@
 #ifndef RETRIEVEFUNC_H
 #define RETRIEVEFUNC_H
 
-#include "../Base/Group.h"
-#include "../Base/Project.h"
-#include <sqlite3.h>
+#include "database_messages.h"
 
 enum GroupStatus
 {
@@ -41,7 +39,7 @@ int getStudentInfo(sqlite3 *DB, size_t student_ID, Student **ppStudent)
     int result = sqlite3_prepare_v2(DB, selectSQL, -1, &statement, nullptr);
     if (result != SQLITE_OK)
     {
-        std::cerr << "Error preparing statement: " << sqlite3_errmsg(DB) << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "Error preparing statement: " << sqlite3_errmsg(DB) << std::endl;
         return group_id;
     }
 
@@ -64,7 +62,7 @@ int getStudentInfo(sqlite3 *DB, size_t student_ID, Student **ppStudent)
     }
     else if (result != SQLITE_DONE)
     {
-        std::cerr << "Error executing statement: " << sqlite3_errmsg(DB) << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "Error executing statement: " << sqlite3_errmsg(DB) << std::endl;
         return group_id;
     }
 
@@ -90,7 +88,7 @@ GroupStatus getGroupInfo(sqlite3 *DB, size_t group_id, Group **ppGroup)
     // Check If valid group_id
     if (group_id <= 0)
     {
-        std::cerr << "Group ID cannot be negative!" << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "Group ID cannot be negative!" << std::endl;
         return groupStatus;
     }
 
@@ -113,7 +111,7 @@ GroupStatus getGroupInfo(sqlite3 *DB, size_t group_id, Group **ppGroup)
     int result = sqlite3_prepare_v2(DB, selectGroup, -1, &selectGroupStatement, nullptr);
     if (result != SQLITE_OK)
     {
-        std::cerr << "Error preparing statement: " << sqlite3_errmsg(DB) << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "Error preparing statement: " << sqlite3_errmsg(DB) << std::endl;
         return groupStatus;
     }
 
@@ -133,7 +131,7 @@ GroupStatus getGroupInfo(sqlite3 *DB, size_t group_id, Group **ppGroup)
     }
     else if (result != SQLITE_DONE)
     {
-        std::cerr << "Error executing statement: " << sqlite3_errmsg(DB) << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "Error executing statement: " << sqlite3_errmsg(DB) << std::endl;
 
         // Finalize The Prepared Statement
         sqlite3_finalize(selectGroupStatement);
@@ -153,7 +151,7 @@ GroupStatus getGroupInfo(sqlite3 *DB, size_t group_id, Group **ppGroup)
     result = sqlite3_prepare_v2(DB, selectStudentSQL, -1, &selectStudentStatement, nullptr);
     if (result != SQLITE_OK)
     {
-        std::cerr << "Error preparing statement: " << sqlite3_errmsg(DB) << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "Error preparing statement: " << sqlite3_errmsg(DB) << std::endl;
         return groupStatus;
     }
 
@@ -176,7 +174,7 @@ GroupStatus getGroupInfo(sqlite3 *DB, size_t group_id, Group **ppGroup)
     }
     if (result != SQLITE_DONE)
     {
-        std::cerr << "Error executing statement: " << sqlite3_errmsg(DB) << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "Error executing statement: " << sqlite3_errmsg(DB) << std::endl;
 
         // Finalize The Prepared Statement
         sqlite3_finalize(selectStudentStatement);

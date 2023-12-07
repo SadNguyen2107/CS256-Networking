@@ -1,24 +1,23 @@
 #ifndef INSERTFUNC_H
 #define INSERTFUNC_H
 
-#define INSERT_FAIL 0
-#define INSERT_SUCCESS 1
+#include "database_messages.h"
 
-#include <string>
-#include "../Base/Group.h"
-#include "../Base/Project.h"
-#include <sqlite3.h>
+enum InsertStatus {
+    INSERT_FAIL = 0,
+    INSERT_SUCCESS = 1
+};
 
-int insertStudentInfo(sqlite3 *DB, Student *student, size_t group_id);
-int insertGroupInfo(sqlite3 *DB, Group *group, size_t group_id);
-int insertProjectInfo(sqlite3 *DB, Project *project, size_t project_id);
-int insertSubmitDate(sqlite3 *DB, Date *submitDate, size_t group_id, size_t project_id);
+InsertStatus insertStudentInfo(sqlite3 *DB, Student *student, size_t group_id);
+InsertStatus insertGroupInfo(sqlite3 *DB, Group *group, size_t group_id);
+InsertStatus insertProjectInfo(sqlite3 *DB, Project *project, size_t project_id);
+InsertStatus insertSubmitDate(sqlite3 *DB, Date *submitDate, size_t group_id, size_t project_id);
 
 // INSERT INTO students table in projects.db
-int insertStudentInfo(sqlite3 *DB, Student *student, size_t group_id)
+InsertStatus insertStudentInfo(sqlite3 *DB, Student *student, size_t group_id)
 {
     // SET FLAG
-    int success = INSERT_SUCCESS;
+    InsertStatus success = INSERT_SUCCESS;
 
     // The prepared statment object
     sqlite3_stmt *stmt = nullptr;
@@ -29,7 +28,7 @@ int insertStudentInfo(sqlite3 *DB, Student *student, size_t group_id)
     int rc = sqlite3_prepare_v2(DB, sql_statement, -1, &stmt, 0);
     if (rc != SQLITE_OK)
     {
-        std::cerr << "SQL error: " << sqlite3_errmsg(DB) << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "SQL error: " << sqlite3_errmsg(DB) << std::endl;
 
         // Finalize the statement and close the database
         sqlite3_finalize(stmt);
@@ -50,7 +49,7 @@ int insertStudentInfo(sqlite3 *DB, Student *student, size_t group_id)
     if (rc != SQLITE_DONE)
     {
         // ERROR OCCUR
-        std::cerr << "Error: " << sqlite3_errmsg(DB) << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "Error: " << sqlite3_errmsg(DB) << std::endl;
         success = INSERT_FAIL;
     }
 
@@ -61,10 +60,10 @@ int insertStudentInfo(sqlite3 *DB, Student *student, size_t group_id)
 }
 
 // INSERT GROUP INFO into groups tale
-int insertGroupInfo(sqlite3 *DB, Group *group, size_t group_id)
+InsertStatus insertGroupInfo(sqlite3 *DB, Group *group, size_t group_id)
 {
     // SET FLAG
-    int success = INSERT_SUCCESS;
+    InsertStatus success = INSERT_SUCCESS;
 
     // The prepared statment object
     sqlite3_stmt *stmt = nullptr;
@@ -75,7 +74,7 @@ int insertGroupInfo(sqlite3 *DB, Group *group, size_t group_id)
     int rc = sqlite3_prepare_v2(DB, sql_statement, -1, &stmt, 0);
     if (rc != SQLITE_OK)
     {
-        std::cerr << "SQL error: " << sqlite3_errmsg(DB) << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "SQL error: " << sqlite3_errmsg(DB) << std::endl;
 
         // Finalize the statement and close the database
         sqlite3_finalize(stmt);
@@ -95,7 +94,7 @@ int insertGroupInfo(sqlite3 *DB, Group *group, size_t group_id)
     if (rc != SQLITE_DONE)
     {
         // ERROR OCCUR
-        std::cerr << "Error: " << sqlite3_errmsg(DB) << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "Error: " << sqlite3_errmsg(DB) << std::endl;
         success = INSERT_FAIL;
     }
 
@@ -105,15 +104,15 @@ int insertGroupInfo(sqlite3 *DB, Group *group, size_t group_id)
     return success;
 }
 
-int insertProjectInfo(sqlite3 *DB, Project *project, size_t id)
+InsertStatus insertProjectInfo(sqlite3 *DB, Project *project, size_t id)
 {
-    int success = INSERT_SUCCESS;
+    InsertStatus success = INSERT_SUCCESS;
     sqlite3_stmt *stmt = nullptr;
     const char *sql_statement = "INSERT INTO projects VALUES(:id, :description, :due_date)";
     int rc = sqlite3_prepare_v2(DB, sql_statement, -1, &stmt, 0);
     if (rc != SQLITE_OK)
     {
-        std::cerr << "SQL error: " << sqlite3_errmsg(DB) << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "SQL error: " << sqlite3_errmsg(DB) << std::endl;
 
         // Finalize the statement and close the database
         sqlite3_finalize(stmt);
@@ -142,7 +141,7 @@ int insertProjectInfo(sqlite3 *DB, Project *project, size_t id)
     if (rc != SQLITE_DONE)
     {
         // ERROR OCCUR
-        std::cerr << "Error: " << sqlite3_errmsg(DB) << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "Error: " << sqlite3_errmsg(DB) << std::endl;
         success = INSERT_FAIL;
     }
 
@@ -151,15 +150,16 @@ int insertProjectInfo(sqlite3 *DB, Project *project, size_t id)
 
     return success;
 }
-int insertSubmitDate(sqlite3 *DB, Date *submitDate, size_t group_id, size_t project_id)
+
+InsertStatus insertSubmitDate(sqlite3 *DB, Date *submitDate, size_t group_id, size_t project_id)
 {
-    int success = INSERT_SUCCESS;
+    InsertStatus success = INSERT_SUCCESS;
     sqlite3_stmt *stmt = nullptr;
     const char *sql_statement = "INSERT INTO groups_submit_dates VALUES(:project_id, :group_id, :submit_date)";
     int rc = sqlite3_prepare_v2(DB, sql_statement, -1, &stmt, 0);
     if (rc != SQLITE_OK)
     {
-        std::cerr << "SQL error: " << sqlite3_errmsg(DB) << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "SQL error: " << sqlite3_errmsg(DB) << std::endl;
 
         // Finalize the statement and close the database
         sqlite3_finalize(stmt);
@@ -185,7 +185,7 @@ int insertSubmitDate(sqlite3 *DB, Date *submitDate, size_t group_id, size_t proj
     if (rc != SQLITE_DONE)
     {
         // ERROR OCCUR
-        std::cerr << "Error: " << sqlite3_errmsg(DB) << std::endl;
+        BOOST_LOG_TRIVIAL(error) << "Error: " << sqlite3_errmsg(DB) << std::endl;
         success = INSERT_FAIL;
     }
 
