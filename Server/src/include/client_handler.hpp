@@ -4,6 +4,9 @@
 #include "../utils/io_operations.h"
 #include "../utils/write_to_json_file.h"
 
+// void HandleFile();
+void HandleKey(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json& responseJSON);
+
 int HandleClient(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket)
 {
     // Create a Lock To Prevent All Threads still running if Pressed exit
@@ -26,21 +29,9 @@ int HandleClient(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket)
             try
             {
                 json responseJSON = json::parse(responseStr);
-                if (responseJSON.find("key") != responseJSON.end())
-                {
-                    // For Checking Receiving Key
-                    // BOOST_LOG_TRIVIAL(debug) << "Receive a PUBLIC KEY from " << client_socket->remote_endpoint().address();
-                    // BOOST_LOG_TRIVIAL(debug) << "Key: ";
-                    // BOOST_LOG_TRIVIAL(debug) << responseJSON.at("key") << std::endl;
 
-                    // Change the content of the key
-                    responseJSON[client_socket->remote_endpoint().address().to_string()] = responseJSON["key"];
-                    responseJSON.erase("key");
-
-                    // Store the client public key into the file
-                    std::string clients_keys_json_file = "keys/clients_public_key.json";
-                    append_to_JSON_file(clients_keys_json_file, &responseJSON);
-                }
+                // Handle Client Key Send
+                HandleKey(client_socket, &responseJSON);
             }
             // If it is not a JSON object
             catch (const std::exception &e)
@@ -100,6 +91,25 @@ void handleShutdownSignal(int signal)
     // Stop the io_context to exit the run loop
     BOOST_LOG_TRIVIAL(info) << "Server is shutting down. Goodbye!" << std::endl;
     io_context->stop();
+}
+
+void HandleKey(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json* responseJSON)
+{
+    if (responseJSON->find("key") != responseJSON->end())
+    {
+        // For Checking Receiving Key
+        // BOOST_LOG_TRIVIAL(debug) << "Receive a PUBLIC KEY from " << client_socket->remote_endpoint().address();
+        // BOOST_LOG_TRIVIAL(debug) << "Key: ";
+        // BOOST_LOG_TRIVIAL(debug) << responseJSON.at("key") << std::endl;
+
+        // Change the content of the key
+        responseJSON->at(client_socket->remote_endpoint().address().to_string()) = responseJSON->at( "key");
+        responseJSON->erase("key");
+
+        // Store the client public key into the file
+        std::string clients_keys_json_file = "keys/clients_public_key.json";
+        append_to_JSON_file(clients_keys_json_file, responseJSON);
+    }
 }
 
 #endif
