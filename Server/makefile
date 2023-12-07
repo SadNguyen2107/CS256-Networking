@@ -16,7 +16,7 @@ else
 	UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
 	GCC = g++
-	LIBS += -lboost_log -lboost_system -lsqlite3 -lboost_log
+	LIBS += -lboost_log -lboost_system 
     endif
 # else ifeq ($(OS), Linux)
 # 	# Linux-specific settings or actions
