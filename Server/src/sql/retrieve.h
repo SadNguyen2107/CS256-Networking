@@ -3,12 +3,8 @@
 #ifndef RETRIEVEFUNC_H
 #define RETRIEVEFUNC_H
 
-#define RETRIEVE_FAIL 0x00000000
-#define RETRIEVE_SUCCESS 0x00000001
-
 #include "../Base/Group.h"
 #include "../Base/Project.h"
-#include <cstdint>
 #include <sqlite3.h>
 
 /**
