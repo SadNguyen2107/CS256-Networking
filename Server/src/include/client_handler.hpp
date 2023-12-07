@@ -5,7 +5,7 @@
 #include "../utils/write_to_json_file.h"
 
 // void HandleFile();
-void HandleKey(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json& responseJSON);
+void HandleKey(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json* responseJSON);
 
 int HandleClient(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket)
 {
