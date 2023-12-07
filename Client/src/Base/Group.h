@@ -2,13 +2,14 @@
 #define GROUP_H
 
 #include "DataStructures/LinkedList.h"
+#include "Exception.h"
 #include <vector>
 #include <string>
 
 struct Student
 {
-    std::string student_name;
     size_t student_id;
+    std::string student_name;
 
     ~Student()
     {
@@ -44,15 +45,17 @@ Student *newStudent(std::string name, size_t id)
 class Group
 {
 private:
+    size_t group_id;
     std::string group_name;
     LinkedList<Student *> group_students;
 
 public:
-    Group(std::string group_name);
+    Group(std::string group_name, size_t group_id);
     ~Group();
 
     //* GETTER
     std::string getGroupName() { return this->group_name; }
+    size_t getGroupID() { return this->group_id; }
     std::vector<Student> getGroupStudentCopy()
     {
         std::vector<Student> listStudent = std::vector<Student>();
@@ -107,6 +110,7 @@ public:
     //* DEBUG PURPOSE
     friend std::ostream &operator<<(std::ostream &os, const Group &group)
     {
+        os << "ID: " << group.group_id << std::endl;
         os << "NAME: " << group.group_name << std::endl;
         os << "GROUP MEMBERS: " << std::endl;
         os << group.group_students << std::endl;
@@ -115,6 +119,7 @@ public:
 
     friend std::ostream &operator<<(std::ostream &os, const Group *group)
     {
+        os << "ID: " << group->group_id << std::endl;
         os << "NAME: " << group->group_name << std::endl;
         os << "GROUP MEMBERS: " << std::endl;
         os << group->group_students << std::endl;
@@ -122,9 +127,15 @@ public:
     }
 };
 
-Group::Group(std::string group_name)
+Group::Group(std::string group_name, size_t group_id)
 {
+    if (group_id <= 0)
+    {
+        throw Exception("Group ID Cannot Below or Equal to 0");
+    }
+
     this->group_name = group_name;
+    this->group_id = group_id;
 };
 
 Group::~Group()
