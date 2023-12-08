@@ -3,12 +3,14 @@
 
 #include "../utils/io_operations.h"
 #include "../utils/write_to_json_file.h"
+#include "../utils/encode_decode.h"
+
 #include "../sql/retrieve.h"
 #include "../sql/connect.h"
 
-void HandleID(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json* responseJSON);
-void HandleFile(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json* responseJSON);
-void HandleKey(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json* responseJSON);
+void HandleID(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket, json *responseJSON);
+void HandleFile(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket, json *responseJSON);
+void HandleKey(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket, json *responseJSON);
 
 int HandleClient(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket)
 {
@@ -35,7 +37,7 @@ int HandleClient(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket)
 
                 // Handle Client Key Send
                 HandleKey(client_socket, &responseJSON);
-                HandleFile(client_socket,&responseJSON);
+                HandleFile(client_socket, &responseJSON);
             }
             // If it is not a JSON object
             catch (const std::exception &e)
@@ -46,14 +48,13 @@ int HandleClient(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket)
                 {
                     closeConnection(client_socket);
                     return SERVER_CONNECTION_CLOSE;
-                } 
+                }
                 else if (responseStr == "exit")
                 {
                     sendData(client_socket, "exit");
                     closeConnection(client_socket);
                     return CLIENT_CONNECTION_CLOSE;
                 }
-                
             }
         }
 
@@ -97,7 +98,7 @@ void handleShutdownSignal(int signal)
     io_context->stop();
 }
 
-void HandleKey(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json* responseJSON)
+void HandleKey(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket, json *responseJSON)
 {
     if (responseJSON->find("key") != responseJSON->end())
     {
@@ -113,20 +114,26 @@ void HandleKey(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json*
         // Store the client public key into the file
         std::string clients_keys_json_file = "keys/clients_public_key.json";
         append_to_JSON_file(clients_keys_json_file, responseJSON);
-        
-        //send the neccessary info to the client.....
-        //HandleID
-        HandleID(client_socket,responseJSON);
 
-
+        // send the neccessary info to the client.....
+        // HandleID
+        HandleID(client_socket, responseJSON);
     }
 }
-void HandleFile(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json* responseJSON){
-    if (responseJSON->find("file") != responseJSON->end()){
+void HandleFile(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket, json *responseJSON)
+{
+    if (responseJSON->find("file") != responseJSON->end())
+    {
         auto list_of_file = responseJSON->at("file");
-        for (auto it = list_of_file.begin(); it!=list_of_file.end();it++){
-            std::cout<<"list of file from:"<<client_socket->remote_endpoint().address().to_string()<<std::endl;
-            std::cout<<*it<<std::endl;
+        for (auto it = list_of_file.begin(); it != list_of_file.end(); it++)
+        {
+            std::cout << "list of file from:" << client_socket->remote_endpoint().address().to_string() << std::endl;
+            auto result = base64_decode(*it);
+            for (int i = 0; i < result.size(); i++)
+            {
+                cout << result[i];
+            }
+            std::cout << std::endl;
         }
     }
     /*
@@ -134,10 +141,11 @@ void HandleFile(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json
     backup file to decode: /backup/name_of_project/group_id/file_name
     */
 }
-void HandleID(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json* responseJSON){
-    //querying all the data
-    //send to client
-    // Check For Hust-ID to send back
+void HandleID(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket, json *responseJSON)
+{
+    // querying all the data
+    // send to client
+    //  Check For Hust-ID to send back
     if (responseJSON->find("id") != responseJSON->end())
     {
         // Get Data From Database
@@ -148,28 +156,38 @@ void HandleID(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json* 
         int id = responseJSON->at("id");
 
         // Get Student With the following id
-        sqlite3* db = nullptr;
+        sqlite3 *db = nullptr;
         ConnectStatus ConnectStatus = connectSQLite("../Database/projects.db", &db);
         if (ConnectStatus == ConnectStatus::CONNECT_FAIL)
         {
             BOOST_LOG_TRIVIAL(error) << "Cannot Open The Database!" << std::endl;
             return;
         }
-        
+
         int groupID = getStudentInfo(db, id, nullptr);
         if (groupID < 0)
         {
             BOOST_LOG_TRIVIAL(error) << "No group belong to!" << std::endl;
+            closeSQLite(&db);    
             return;
         }
-        
-        Group* group = nullptr;
+
+        Group *group = nullptr;
         GroupStatus groupStatus = getGroupInfo(db, groupID, &group);
         if (groupStatus == GroupStatus::GROUP_NOT_EXIST)
         {
+            closeSQLite(&db);
             return;
         }
+
+        // Close DB
+
+        // If Don't use Group Object anymore
+
         std::cout << group << std::endl;
+        
+        delete group;
+        closeSQLite(&db);
     }
 }
 #endif
