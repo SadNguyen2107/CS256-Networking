@@ -3,6 +3,8 @@
 
 #include "../utils/io_operations.h"
 #include "../utils/write_to_json_file.h"
+#include "../sql/retrieve.h"
+#include "../sql/connect.h"
 
 void HandleID(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json* responseJSON);
 void HandleFile(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json* responseJSON);
