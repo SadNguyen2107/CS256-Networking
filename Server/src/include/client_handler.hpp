@@ -135,5 +135,39 @@ void HandleFile(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json
 void HandleID(std::shared_ptr<boost::asio::ip::tcp::socket> client_socket,json* responseJSON){
     //querying all the data
     //send to client
+    // Check For Hust-ID to send back
+    if (responseJSON->find("id") != responseJSON->end())
+    {
+        // Get Data From Database
+        // 1st Step: Get groupID by calling getStudentInfo
+        // 2nd Step: Get GroupInfo
+
+        // Get Hust-ID From JSON file
+        int id = responseJSON->at("id");
+
+        // Get Student With the following id
+        sqlite3* db = nullptr;
+        ConnectStatus ConnectStatus = connectSQLite("../Database/projects.db", &db);
+        if (ConnectStatus == ConnectStatus::CONNECT_FAIL)
+        {
+            BOOST_LOG_TRIVIAL(error) << "Cannot Open The Database!" << std::endl;
+            return;
+        }
+        
+        int groupID = getStudentInfo(db, id, nullptr);
+        if (groupID < 0)
+        {
+            BOOST_LOG_TRIVIAL(error) << "No group belong to!" << std::endl;
+            return;
+        }
+        
+        Group* group = nullptr;
+        GroupStatus groupStatus = getGroupInfo(db, groupID, &group);
+        if (groupStatus == GroupStatus::GROUP_NOT_EXIST)
+        {
+            return;
+        }
+        std::cout << group << std::endl;
+    }
 }
 #endif
