@@ -5,13 +5,13 @@ OUTPUT 			= Homework_Submitter
 GCC 			= x86_64-w64-mingw32-g++
 GGC_FLAGS 		= -static-libgcc -static-libstdc++ -Wall
 LOGFLAGS 		= -DBOOST_LOG_DYN_LINK
-LIBS 			= -lsqlite3
+LIBS 			= -lsqlite3 -lcrypto
 
 # Check the OS-SYSTEM to give the Right LIBS
 #--------------------------------------------------------------------
 ifeq ($(OS),Windows_NT)
     # Windows-specific settings or actions
-	LIBS += -lwsock32 -lws2_32 -lboost_system-mt -lboost_log-mt -lcrypto
+	LIBS += -lwsock32 -lws2_32 -lboost_system-mt -lboost_log-mt 
 else
 	UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
