@@ -2,7 +2,6 @@
 #include "./src/include/user_authentication.hpp"
 #include "./src/include/accept_connections.hpp"
 
-
 int main(int argc, char const *argv[])
 {
     // Create io_service for SERVER
@@ -19,8 +18,7 @@ int main(int argc, char const *argv[])
     // Listening for any new incomming connection
     acceptor_server = std::make_shared<boost::asio::ip::tcp::acceptor>(
         *io_context,
-        server_endpoint
-    );
+        server_endpoint);
 
     // Show a Log of SET UP SERVER
     BOOST_LOG_TRIVIAL(info) << "Sever Configuration..." << std::endl;
@@ -36,6 +34,5 @@ int main(int argc, char const *argv[])
 
     acceptThread.join();
     BOOST_LOG_TRIVIAL(info) << "Server shutting downs." << std::endl;
-
     return 0;
 }
