@@ -4,18 +4,18 @@ TARGET 			= server
 # Compiler and Flags
 CXX 			= x86_64-w64-mingw32-g++
 CXXFLAGS 		= -static-libgcc -static-libstdc++ -Wall -DBOOST_LOG_DYN_LINK 
-LIBS 			= -lsqlite3
+LIBS 			= -lsqlite3 -lcrypto
 
 # Check the OS-SYSTEM to give the Right LIBS
 #--------------------------------------------------------------------
 ifeq ($(OS),Windows_NT)
     # Windows-specific settings or actions
-	LIBS += -lwsock32 -lws2_32 -lboost_log-mt -lboost_system-mt -lcrypto
+	LIBS += -lwsock32 -lws2_32 -lboost_log-mt -lboost_system-mt 
 else
 	UNAME_S := $(shell uname -s)
     ifeq ($(UNAME_S),Linux)
 		CXX = g++
-		LIBS += -lboost_log -lboost_system -lcrypto
+		LIBS += -lboost_log -lboost_system 
     endif
 endif
 #------------------------------------------------------------------
