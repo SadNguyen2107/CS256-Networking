@@ -7,8 +7,8 @@ struct Node
     Value data;
     Node *next;
 
-    Node(Value data) : data(data), next(nullptr) {}
-    ~Node() {}
+    Node(Value data);
+    ~Node();
 };
 
 #endif
